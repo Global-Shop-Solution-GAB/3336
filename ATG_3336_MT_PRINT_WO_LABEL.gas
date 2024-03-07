@@ -1,0 +1,52 @@
+Program.Sub.ScreenSU.Start
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+Function.ODBC.Connection!Conx.OpenConnection(Variable.ambient.PDSN,Variable.Ambient.PUSER,Variable.Ambient.PPass)
+Function.ODBC.Connection!Cony.OpenConnection(V.Ambient.Ccon,V.Ambient.CUser,V.Ambient.CPass)
+V.Local.sQuery.Declare(String)
+V.Local.sLabel.Declare(String)
+V.Local.iQuantity.Declare(Long)
+V.Local.sJob.Declare(String)
+V.Local.sSuffix.Declare(String)
+V.Local.sName.Declare(String)
+V.Local.sValue.Declare(String)
+V.Local.sUID.Declare(String)
+V.Local.sPrinter.Declare(String)
+V.Local.sReportName.Declare(String)
+
+F.Intrinsic.Control.If(V.Caller.hook,=,39002)
+	F.Intrinsic.String.Concat("Select Field_1, Field_2, Field_3 from WIRELESS_LINE where TRANS_ID = '",V.passed.DATA-TRANSID,"'",V.Local.sQuery)
+	Function.ODBC.Connection!Conx.OpenRecordsetRO("rstWIR",V.Local.squery)
+	V.Local.sJob.Set(V.ODBC.Conx!rstWIR.FieldVal!Field_1)
+	V.Local.sSuffix.Set(V.ODBC.Conx!rstWIR.FieldVal!Field_2)
+	V.Local.iQuantity.Set(V.ODBC.Conx!rstWIR.FieldVal!Field_3)
+	F.Intrinsic.String.Split("Job*!*Suffix","*!*",V.Local.sName)
+	F.Intrinsic.String.Concat(V.Local.sJob,"*!*",V.Local.sSuffix,V.Local.sValue)
+	F.Intrinsic.String.Split(V.Local.sValue,"*!*",V.Local.sValue)
+
+	F.Intrinsic.String.Concat("SELECT UID FROM MOBILE_USER_INFO where GSUSERNAME =  '",V.Caller.USER,"",V.Local.sQuery)
+	Function.ODBC.Connection!Cony.OpenRecordsetRO("rstWIR2",V.Local.squery)
+	V.Local.sUID.Set(V.ODBC.Cony!rstWIR2.FieldVal!UID)
+
+	F.Intrinsic.String.Concat("SELECT NAME FROM MOBILE_USER_PRINTER where UID = '",V.Local.sUID,"'",V.Local.sQuery)
+	Function.ODBC.Connection!Cony.OpenRecordsetRO("rstWIR3",V.Local.squery)
+	V.Local.sPrinter.Set(V.ODBC.Cony!rstWIR3.FieldVal!NAME)
+	F.Intrinsic.String.Trim(V.Local.sPrinter,V.Local.sPrinter)
+	F.Global.BI.PrintBartenderLabel("001865",3,V.Local.sName,V.Local.sValue,False,V.Local.sPrinter,V.Local.iQuantity)
+
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Conx.Close
+F.ODBC.Connection!Cony.Close
+
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$0$}$ATG-Transactions-ADD_CONTACT$}$TSP$}$8/27/2012
+Program.Sub.Comments.End
+
